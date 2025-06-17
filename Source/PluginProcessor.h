@@ -52,6 +52,9 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    //slider
+    juce::AudioProcessorValueTreeState parameters;
 
 private:
     
@@ -65,6 +68,12 @@ private:
     
     
     juce::dsp::Gain<float> gain;
+    
+    // Sliders
+    std::atomic<float>* frequencyParameter = nullptr;
+    std::atomic<float>* gainParameter = nullptr;
+    
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JuceSynthAudioProcessor)

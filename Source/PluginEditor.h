@@ -29,5 +29,14 @@ private:
     // access the processor object that created it.
     JuceSynthAudioProcessor& audioProcessor;
 
+    //SLIDERS
+    juce::Slider frequencySlider;
+    juce::Label frequencyLabel;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> frequencyAttachment;
+    
+    juce::Slider gainSlider;
+    juce::Label gainLabel;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JuceSynthAudioProcessorEditor)
 };

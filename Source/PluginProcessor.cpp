@@ -21,7 +21,10 @@ JuceSynthAudioProcessor::JuceSynthAudioProcessor()
                      #endif
                        )
 #endif
+    , parameters(*this, nullptr, "Parameters", createParameterLayout())
 {
+    frequencyParameter = parameters.getRawParameterValue("frequency");
+    gainParameter = parameters.getRawParameterValue("gain");
 }
 
 JuceSynthAudioProcessor::~JuceSynthAudioProcessor()
@@ -100,10 +103,12 @@ void JuceSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     spec.maximumBlockSize = samplesPerBlock;
     spec.sampleRate = sampleRate;
     spec.numChannels = getTotalNumOutputChannels();
+    
     osc.prepare(spec);
     gain.prepare(spec);
-    osc.setFrequency(220.0f);
-    gain.setGainLinear(0.01f);
+    
+    osc.setFrequency(frequencyParameter->load());
+    gain.setGainLinear(gainParameter->load());
 }
 
 void JuceSynthAudioProcessor::releaseResources()
@@ -153,9 +158,23 @@ void JuceSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    juce::dsp::AudioBlock<float> audioBlock { buffer };
-    osc.process(juce::dsp::ProcessContextReplacing<float> (audioBlock));
-    gain.process(juce::dsp::ProcessContextReplacing<float> (audioBlock));
+    // Update oscillator parameters
+    osc.setFrequency(frequencyParameter->load());
+    gain.setGainLinear(gainParameter->load());
+    
+    // Your existing processing code...
+    auto audioBlock = juce::dsp::AudioBlock<float>(buffer);
+    auto processContext = juce::dsp::ProcessContextReplacing<float>(audioBlock);
+    
+    osc.process(processContext);
+    gain.process(processContext);
+    
+    //TUTORIAL
+    //juce::dsp::AudioBlock<float> audioBlock { buffer };
+    
+    
+    //osc.process(juce::dsp::ProcessContextReplacing<float> (audioBlock));
+    //gain.process(juce::dsp::ProcessContextReplacing<float> (audioBlock));
     
 //
 //    // This is the place where you'd normally do the guts of your plugin's
@@ -195,6 +214,28 @@ void JuceSynthAudioProcessor::setStateInformation (const void* data, int sizeInB
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+}
+
+//PARAMETERS SLIDERS
+juce::AudioProcessorValueTreeState::ParameterLayout JuceSynthAudioProcessor::createParameterLayout()
+{
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+    
+    // Frequency parameter with version hint in constructor
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID("frequency", 1), // ID with version hint
+        "Frequency",
+        juce::NormalisableRange<float>(20.0f, 2000.0f, 1.0f, 0.3f),
+        220.0f));
+    
+    // Gain parameter with version hint in constructor
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID("gain", 1), // ID with version hint
+        "Gain",
+        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+        0.01f));
+    
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================

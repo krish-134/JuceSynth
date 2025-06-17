@@ -13,6 +13,30 @@
 JuceSynthAudioProcessorEditor::JuceSynthAudioProcessorEditor (JuceSynthAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
+    // Frequency slider
+    frequencySlider.setSliderStyle(juce::Slider::Rotary);
+    frequencySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(frequencySlider);
+    
+    frequencyLabel.setText("Frequency", juce::dontSendNotification);
+    frequencyLabel.attachToComponent(&frequencySlider, false);
+    addAndMakeVisible(frequencyLabel);
+    
+    frequencyAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.parameters, "frequency", frequencySlider);
+    
+    // Gain slider
+    gainSlider.setSliderStyle(juce::Slider::Rotary);
+    gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(gainSlider);
+    
+    gainLabel.setText("Gain", juce::dontSendNotification);
+    gainLabel.attachToComponent(&gainSlider, false);
+    addAndMakeVisible(gainLabel);
+    
+    gainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.parameters, "gain", gainSlider);
+    
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 300);
@@ -37,4 +61,9 @@ void JuceSynthAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+    
+    auto area = getLocalBounds();
+    
+    frequencySlider.setBounds(50, 50, 100, 100);
+    gainSlider.setBounds(200, 50, 100, 100);
 }
